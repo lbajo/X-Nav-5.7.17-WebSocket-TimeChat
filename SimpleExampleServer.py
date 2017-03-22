@@ -7,6 +7,7 @@ import signal
 import sys
 import ssl
 import logging
+import time
 from SimpleWebSocketServer import WebSocket, SimpleWebSocketServer, SimpleSSLWebSocketServer
 from optparse import OptionParser
 
@@ -16,11 +17,22 @@ logging.basicConfig(format='%(asctime)s %(message)s', level=logging.DEBUG)
 class SimpleEcho(WebSocket):
 
     def handleMessage(self):
+
         if self.data is None:
             self.data = ''
 
+        if self.data == "getTime":
+            self.data = "Son las " + time.strftime("%H:%M:%S") + " del " + time.strftime("%d/%m/%y")
+
         try:
             self.sendMessage(str(self.data))
+            for client in self.server.connections.itervalues():
+                if client != self:
+                    try:
+                        client.sendMessage(str(self.data))
+                    except Exception as n:
+                        print n
+
         except Exception as n:
             print n
 
